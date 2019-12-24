@@ -1,0 +1,1 @@
+imp userid=scott/tiger tables=car_country, car_maker, car_model file=경로명

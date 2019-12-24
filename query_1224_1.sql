@@ -56,7 +56,7 @@ create table foreign_table(
 );
 
 select * from user_constraints;
-                                          
+
 
 
 --------------------------- unique ------------------
@@ -65,5 +65,26 @@ select * from user_constraints;
 create table unique_column(
   name varchar2(10),
   age number(3),
-  email varchar2(50)	
+  email varchar2(50) constraint uk_email unique
 );
+create table unique_table(
+  name varchar2(10),
+  age number(3),
+  phone varchar2(13byte),
+  constraint uk_phone unique(phone)
+);
+
+-- 추가 성공
+-- 최초 레코드 입력
+insert into unique_column(name, age, email) values('박찬우', 27, 'park@test.com');
+commit;
+-- 이메일이 다르면 추가 성공
+insert into unique_column(name, age, email) values('박찬우', 27, 'park1@test.com');
+-- null 허용
+insert into unique_column(name, age, email) values('박찬우', 27, '');
+insert into unique_column(name, age, email) values('박찬우', 26, '');
+-- Error : 동일 값이 입력되면 에러
+insert into unique_column(name, age, email) values('박고기', 40, 'park@test.com');
+
+
+select * from unique_column;
