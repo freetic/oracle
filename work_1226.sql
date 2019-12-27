@@ -19,9 +19,9 @@ where r between 3 and 6;
 select empno, ename, to_char(hiredate, 'mm-dd-yyyy dy'), sal, r sal_rank, dname, deptno, loc, nvl(substr(zipcode, instr(zipcode, '-')+1), '번지없음'), sido, gugun, dong, bunji
 from (select rownum rr, r,empno, ename, hiredate, sal, dname, deptno, loc, zipcode, sido, gugun, dong, bunji
 from (select rownum r, empno, ename, hiredate, sal, rn, dname, deptno, loc, zipcode, sido, gugun, dong, bunji
-from ( select rownum rn, e.empno, e.ename, e.hiredate, e.sal, d.dname, d.deptno, d.loc, zc.zipcode, zc.sido, zc.gugun, zc.dong, zc.bunji
+from (select rownum rn, e.empno, e.ename, e.hiredate, e.sal, d.dname, d.deptno, d.loc, zc.zipcode, zc.sido, zc.gugun, zc.dong, zc.bunji
 from emp e, dept d, zipcode zc
-where (e.deptno = d.deptno and zc.seq = e.deptno) and (d.deptno = 10 or d.deptno = 30 or d.deptno=40)
+where (e.deptno(+) = d.deptno and zc.seq(+) = e.deptno) and (d.deptno = 10 or d.deptno = 30 or d.deptno=40)
 order by sal desc
 )
 order by empno))
@@ -48,18 +48,26 @@ order by cmo.car_year desc, cmo.price desc;
 select '[' || model || '] 차량의 연식은 [' || car_year || ']이고, 제조국은 [' || country || ']이며, [' || maker || ']사가 제조사입니다. 가격은 [' || to_char(price, '0,000,00') || ']원 입니다.' car_info
 from (select rownum r, cma.model, cc.country, cma.maker, cmo.price, cmo.car_year
 from car_country cc, car_maker cma, car_model cmo
-where cma.maker = cc.maker and cmo.model = cma.model
+where cma.maker = cc.maker and cmo.model = cma.model and cma.model in ('K5', '아반테', '소렌토', 'A8', 'SM3')
 order by cmo.price)
-where r between 2 and 7                  ;
+where r between 2 and 7;
+-- 이게 맞는듯
+select '[' || model || '] 차량의 연식은 [' || car_year || ']이고, 제조국은 [' || country || ']이며, [' || maker || ']사가 제조사입니다. 가격은 [' || to_char(price, '0,000,00') || ']원 입니다.' car_info
+from (select row_number() over(order by cmo.price) r, cma.model, cc.country, cma.maker, cmo.price, cmo.car_year
+from car_country cc, car_maker cma, car_model cmo
+where cma.maker = cc.maker and cmo.model = cma.model and cma.model in ('K5', '아반테', '소렌토', 'A8', 'SM3') )
+where r between 2 and 7;
 
 update car_model
 set car_img = 'qm5_005.jpg'
 where car_img='qm5_005.jpg,qm5_006.jpg';
 
 --5. 제조사가 '현대'인 차량의 년식, 모델명, 연식별 총가격을 조회.
-select cmo.car_year, cmo.model, sum(cmo.price) over(order by car_year)
+select cmo.car_year, cma.model, sum(cmo.price)
 from car_country cc, car_maker cma, car_model cmo
-where cma.maker = cc.maker and cmo.model = cma.model and cma.maker = '현대';
+where cma.maker = cc.maker and cmo.model = cma.model and cma.maker = '현대'
+group by cma.model, cmo.car_year
+order by car_year;
 
 
 select * from car_model;
@@ -72,22 +80,35 @@ select * from car_model;
 --     10- 년봉 7%, 20- 년봉 4%, 30- 년봉+보너스 10%, 그외 3%로
 --     계산하여 3자리마다 ,를 넣어 출력.
 --     모든 영어는 소문자로 출력.
-select e.empno, lower(e.ename), e.hiredate,  e.sal, sal*3.3/100 tax, to_char(sal+(sal*0.1)+nvl(comm, 0)-(sal*3.3/100), '9,999,999') real_sal, decode(e.deptno, 10, sal*7/100, 20, sal*4/100, 30, sal*0.1, sal*3/100) sal_up, d.deptno, lower(d.dname), lower(d.loc), z.zipcode, z.sido, z.gugun, z.dong, z.bunji
+select e.empno, lower(e.ename), e.hiredate,  e.sal, sal*3.3/100 tax, to_char(sal+(sal/12)+nvl(comm, 0)-(sal*3.3/100), '9,999,999') real_sal, decode(e.deptno, 10, sal*7/100, 20, sal*4/100, 30, sal*0.1, sal*3/100) sal_up, d.deptno, lower(d.dname), lower(d.loc), z.zipcode, z.sido, z.gugun, z.dong, z.bunji
 from emp e, dept d, zipcode z
-where e.deptno = d.deptno and d.deptno = z.seq and (e.ename like '%S' or ( length(e.ename) = 5 and substr(e.ename, 3, 3) = 'A' ));
+where (e.deptno = d.deptno and z.seq = d.deptno) and (e.ename like '%S' or ( length(e.ename) = 5 and substr(e.ename, 3, 1) = 'A' ));
 
+select substr(ename, 3, 3) from emp;
 --7. 아래 제시된 Data Dictionary를 파악하고 조건절에 입력되는 테이블 명이 들어어오면
 --   해당 테이블에 컬럼명,데이터형, 크기, 기본값, 제약사항명을  조회
 --    단, 크기는 숫자인 경우 22자가 아닌 실제 크기를 출력할 것.
 --	user_tab_cols utc , user_cons_columns ucc,user_constraints uc
-select utc.column_name, utc.data_type, decode(utc.data_type, 'NUMBER', ceil(utc.data_length/2)+1, utc.data_length) siz_e, utc.data_default data_default, decode(uc.constraint_type, 'P', 'primary key', 'R', 'foreign key', 'C', 'check_or_not_null', 'U', 'unique', '제약사항X') const
+select utc.column_name, utc.data_type,
+decode(utc.data_type, 'NUMBER', ceil(utc.data_length/2)+1, utc.data_length) siz_e,utc.data_default data_default,
+decode(uc.constraint_type, 'P', 'primary key', 'R', 'foreign key', 'C', 'check_or_not_null', 'U', 'unique', '제약사항X') const,
+substr(ucc.constraint_name, 1, 2)
 from user_tab_cols utc, user_cons_columns ucc, user_constraints uc
-where utc.column_name = ucc.column_name and utc.table_name = uc.table_name;
+where (utc.table_name = ucc.table_name and utc.table_name = uc.table_name) and utc.table_name = upper('emp')
+and ;
+
+SELECT SUBSTR(TABLE_NAME,1,15)　　　 TABLE_NAMES,　　
+　　 　 SUBSTR(COLUMN_NAME,1,15)　　　COLUMN_NAME,　　
+　　 　 　 SUBSTR(CONSTRAINT_NAME,1,25)　CONSTRAINT_NAME　　
+FROM　USER_CONS_COLUMNS
+WHERE TABLE_NAME = UPPER('emp')
+;
+
 
 select *
-from user_tab_cols;
+from user_tab_cols where table_name = upper('emp');
 select *
-from user_cons_columns;
+from user_cons_columns where table_name = upper('emp');
 select *
-from user_constraints;
+from user_constraints where table_name = upper('emp');
 commit;
