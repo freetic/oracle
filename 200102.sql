@@ -1,0 +1,48 @@
+-- plsql 공부.
+
+--create or replace procedure sp_emp_select
+--(
+--  p_empno in number
+--)
+--is
+--  v_empno number;
+--  v_ename varchar2(20);
+--  v_job varchar2(20);
+--begin
+--  select empno, ename, job
+--  into v_empno, v_ename, v_job
+--  from emp
+--  where empno = p_empno;
+--  dbms_output.put_line('번호' || ' ' || '이름' || ' ' || '직무');
+--  dbms_output.put_line('---------------------------------------');
+--  dbms_output.put_line(v_empno || ' ' || v_ename || ' ' || v_job);
+--end;
+
+--create or replace procedure sp_emp_insert
+--(
+--  v_empno in  emp.empno%type,
+--  v_ename in  emp.ename%type,
+--  v_sal   in  emp.sal%type
+--)
+--is
+--begin
+--  insert into emp(empno, ename, sal)
+--  values(v_empno, v_ename, v_sal);
+--  commit;
+--end;
+
+--create or replace procedure sp_dept_select
+--(
+--  p_deptno  in  dept.deptno%type,
+--  p_dname   out dept.dname%type
+--)
+--is
+--begin
+--  select dname
+--  into p_dname
+--  from dept
+--  where deptno = 20;
+--end;
+
+--select object_name, procedure_name
+--from user_procedures;
