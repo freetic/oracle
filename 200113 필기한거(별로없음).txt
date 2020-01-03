@@ -1,0 +1,22 @@
+sqlplus에서 변수 선언
+var[iable] 변수명 (varchar2 | number | date 등);
+
+프로시저 실행
+exec 프로시저명(넣을거);
+
+자바 입장에서 커서는 SYS_REFCURSOR만 알면 됨
+
+암시적커서 안씀. 명시적 커서.
+커서는 select만을 위해 존재한다.
+
+
+conn sys as sysdba
+
+Naming Convert 지켜서 변수명 정하기.
+
+Pasca-lCasing
+Camel-Casing
+Kebab-Casing
+Underbarscore-casing
+
+CHR(9) <-  탭 (탭의 아스키코드가 9)
